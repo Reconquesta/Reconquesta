@@ -40,7 +40,7 @@ body{font-family:'Georgia',serif;background:#1a0a00;color:#f0e6d0;min-height:100
 .battlefield-wrap{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;background:#1a0a00;padding:4px;}
 .battlefield{display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(8,1fr);gap:2px;width:100%;max-width:430px;}
 .bf-cell{aspect-ratio:1;border-radius:3px;border:1px solid #3d2000;display:flex;flex-direction:column;align-items:stretch;cursor:pointer;position:relative;transition:all 0.12s;min-height:42px;overflow:hidden;}
-.bf-cell .zone-label{font-size:7px;color:#ffffff20;position:absolute;top:2px;left:2px;z-index:1;}
+.bf-cell .zone-label{font-size:8px;color:#ffffff20;position:absolute;top:2px;left:2px;z-index:1;}
 .zone-rz_p1{background:#001a0d;}.zone-rz_p2{background:#1a0000;}.zone-burz_p1{background:#002a18;}.zone-burz_p2{background:#2a0010;}.zone-ad_p1{background:#0a1220;}.zone-ad_p2{background:#200a10;}.zone-bf{background:#141008;}
 .bf-cell.highlight-move{border-color:#00cc66!important;background:#003318!important;}
 .bf-cell.highlight-attack{border-color:#cc2200!important;background:#220000!important;cursor:crosshair;}
@@ -49,7 +49,7 @@ body{font-family:'Georgia',serif;background:#1a0a00;color:#f0e6d0;min-height:100
 .bf-cell.highlight-obstacle-preview{border-color:#554400!important;background:#181000!important;opacity:0.7;cursor:not-allowed!important;}
 .bf-cell.highlight-anchor{border-color:#ffcc00!important;background:#332200!important;box-shadow:0 0 6px #ffcc0060;}
 .cell-stack{display:flex;flex-direction:column;gap:1px;padding:1px;width:100%;height:100%;}
-.cell-layer{border-radius:2px;border:1px solid;font-size:7px;padding:1px 2px;line-height:1.2;flex-shrink:0;}
+.cell-layer{border-radius:2px;border:1px solid;font-size:8px;padding:1px 2px;line-height:1.2;flex-shrink:0;}
 .layer-conqueror.p1{border-color:#00cc66;background:#002211;color:#00cc66;}
 .layer-conqueror.p2{border-color:#ff4422;background:#220000;color:#ff4422;}
 .layer-artillery.p1{border-color:#4488ff;background:#001133;color:#4488ff;}
@@ -60,7 +60,7 @@ body{font-family:'Georgia',serif;background:#1a0a00;color:#f0e6d0;min-height:100
 .layer-trap{border-color:#aa4488;background:#1a0014;color:#cc66aa;}
 .layer-trap.facedown{border-color:#554455;background:#110011;color:#554455;}
 .layer-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.layer-stats{display:flex;justify-content:space-between;font-size:6px;}
+.layer-stats{display:flex;justify-content:space-between;font-size:7px;}
 .layer-hp{height:2px;border-radius:1px;background:#cc2200;margin-top:1px;}
 .layer-hp-fill{height:100%;border-radius:1px;background:#00cc66;}
 .layer-exhausted{opacity:0.5;}
@@ -145,6 +145,82 @@ body{font-family:'Georgia',serif;background:#1a0a00;color:#f0e6d0;min-height:100
 .db-detail-add:hover{background:#2a1800;}
 .db-detail-add:disabled{opacity:0.4;cursor:default;}
 ::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:#3d2000;border-radius:2px;}
+/* ── FOCUS / A11Y ── */
+button,select,input,.bf-cell,.hand-card,.db-card{touch-action:manipulation;}
+button:focus-visible,select:focus-visible,input:focus-visible,.bf-cell:focus-visible{outline:2px solid #ffcc00;outline-offset:1px;}
+.own-tag{display:inline-block;min-width:9px;height:9px;line-height:9px;text-align:center;padding:0 1px;font-size:7px;font-weight:bold;margin-right:2px;vertical-align:middle;}
+.own1{background:#0a3d1a;color:#7CFC9B;border-radius:50%;}
+.own2{background:#3d0a0a;color:#FF9B7C;border-radius:0;}
+/* ── DAMAGE PREVIEW ── */
+.dmg-badge{position:absolute;bottom:1px;right:1px;z-index:4;background:#cc2200;color:#fff;font-size:8px;font-weight:bold;padding:0 3px;border-radius:3px;pointer-events:none;box-shadow:0 0 3px #000;}
+.dmg-badge.lethal{background:#ffcc00;color:#1a0a00;}
+.dmg-badge .wk{color:#ffd0d0;font-size:7px;}
+/* ── COMBAT FX ── */
+@keyframes fxHit{0%{box-shadow:0 0 0 0 #ff3300;}30%{box-shadow:0 0 10px 3px #ff3300;}100%{box-shadow:0 0 0 0 rgba(255,51,0,0);}}
+@keyframes fxShake{0%,100%{transform:translateX(0);}25%{transform:translateX(-2px);}75%{transform:translateX(2px);}}
+@keyframes fxDestroy{0%{filter:brightness(2.4);}100%{filter:brightness(1);}}
+@keyframes fxGlory{0%{box-shadow:0 0 0 0 #ffcc00;}30%{box-shadow:0 0 14px 4px #ffcc00;}100%{box-shadow:0 0 0 0 rgba(255,204,0,0);}}
+.fx-hit{animation:fxHit .4s ease-out,fxShake .3s ease-in-out;}
+.fx-destroy{animation:fxDestroy .5s ease-out;}
+.fx-glory{animation:fxGlory .55s ease-out;}
+/* ── PASS CURTAIN ── */
+#pass-curtain{display:none;position:fixed;inset:0;z-index:200;background:#120800;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px;}
+#pass-curtain.active{display:flex;}
+.pass-title{font-size:26px;color:#d4a843;letter-spacing:3px;margin-bottom:8px;}
+.pass-sub{font-size:13px;color:#a08060;margin-bottom:26px;max-width:340px;}
+/* ── TUTORIAL TOUR ── */
+#tour-overlay{display:none;position:fixed;inset:0;z-index:210;}
+#tour-overlay.active{display:block;}
+#tour-backdrop{position:absolute;inset:0;}
+#tour-ring{position:absolute;border:2px solid #ffcc00;border-radius:5px;box-shadow:0 0 0 9999px rgba(0,0,0,.66),0 0 12px #ffcc00;transition:all .2s;pointer-events:none;}
+#tour-bubble{position:absolute;max-width:300px;background:#1a0a00;border:1px solid #d4a843;border-radius:5px;padding:14px 16px;box-shadow:0 4px 20px #000;}
+.tour-title{font-size:15px;color:#d4a843;letter-spacing:1px;margin-bottom:6px;}
+.tour-body{font-size:12px;color:#c0b090;line-height:1.5;margin-bottom:12px;}
+.tour-nav{display:flex;align-items:center;gap:8px;}
+.tour-progress{font-size:10px;color:#a08060;flex:1;}
+.tour-btn{padding:5px 12px;border:1px solid #d4a843;background:transparent;color:#d4a843;font-family:Georgia,serif;font-size:12px;cursor:pointer;border-radius:3px;}
+.tour-btn:hover{background:#2a1800;}
+.tour-btn.skip{border-color:#3d2000;color:#a08060;}
+/* ── DECK BUILDER CURVE / SAVED / IO ── */
+.db-curve{margin-bottom:8px;padding:6px;background:#0d0500;border:1px solid #3d2000;border-radius:3px;}
+.db-curve-title{font-size:9px;color:#d4a843;letter-spacing:1px;margin-bottom:4px;}
+.curve-row{display:flex;align-items:center;gap:4px;margin-bottom:2px;font-size:9px;color:#a08060;}
+.curve-label{width:26px;flex-shrink:0;text-align:right;}
+.curve-bar-wrap{flex:1;background:#1e1000;border-radius:2px;height:9px;overflow:hidden;}
+.curve-bar{height:100%;background:#d4a843;border-radius:2px;}
+.curve-count{width:16px;text-align:right;color:#c0b090;}
+.elem-pips{display:flex;gap:7px;flex-wrap:wrap;margin-top:5px;}
+.elem-pip{display:flex;align-items:center;gap:3px;font-size:9px;color:#c0b090;}
+.db-saved{margin-bottom:8px;max-height:96px;overflow-y:auto;}
+.db-saved-row{display:flex;align-items:center;gap:4px;font-size:10px;padding:2px 0;border-bottom:1px solid rgba(61,32,0,.4);}
+.db-saved-name{flex:1;color:#f0e6d0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.db-saved-row button{background:#3d2000;border:none;color:#d4a843;cursor:pointer;border-radius:2px;font-size:10px;padding:2px 6px;font-family:Georgia,serif;}
+.db-saved-row button:hover{background:#d4a843;color:#1a0a00;}
+.db-io{display:flex;gap:4px;}
+.db-io .db-btn{margin-bottom:4px;}
+/* ── RESPONSIVE ── */
+@media (max-width:760px){
+  body{overflow-y:auto;}
+  .game-layout{grid-template-columns:1fr;height:auto;min-height:100vh;}
+  .left-panel,.right-panel{border:none;border-bottom:1px solid #3d2000;}
+  .center-area{order:-1;}
+  .battlefield{max-width:100%;}
+  .battlefield-wrap{padding:8px 4px;}
+  .bf-cell{min-height:54px;}
+  .cell-layer{font-size:9px;}
+  .layer-stats{font-size:8px;}
+  .db-layout{grid-template-columns:1fr;height:auto;min-height:100vh;}
+  .db-library,.db-deck-panel{border-right:none;border-bottom:1px solid #3d2000;}
+  .db-card-grid{max-height:50vh;}
+  .game-title{font-size:40px;letter-spacing:3px;}
+  .menu-btn{width:90%;max-width:280px;}
+  #tour-bubble{max-width:88vw;}
+  .setup-box,.modal-box{max-width:95vw;}
+}
+@media (max-width:760px) and (orientation:landscape){
+  .game-layout{grid-template-columns:130px 1fr 150px;height:100vh;}
+  .center-area{order:0;}
+}
 </style>
 </head>
 <body>
@@ -154,6 +230,7 @@ body{font-family:'Georgia',serif;background:#1a0a00;color:#f0e6d0;min-height:100
   <div class="game-title">RECONQUESTA</div>
   <div class="game-subtitle">THE CONQUEST BEGINS</div>
   <button class="menu-btn" id="btn-new-game">⚔ New Game</button>
+  <button class="menu-btn" id="btn-tutorial">🎓 Interactive Tutorial</button>
   <button class="menu-btn" id="btn-deck-builder">🃏 Deck Builder</button>
   <button class="menu-btn" id="btn-rules">📜 How to Play</button>
   <button class="menu-btn" id="btn-card-library">📖 Card Library</button>
@@ -197,6 +274,18 @@ body{font-family:'Georgia',serif;background:#1a0a00;color:#f0e6d0;min-height:100
       <input class="r" type="radio" name="deck2" id="d2-light" value="light"><label class="rl" for="d2-light">✨ Light</label>
       <input class="r" type="radio" name="deck2" id="d2-custom" value="custom"><label class="rl" for="d2-custom" id="d2-custom-label">✏ Custom</label>
     </div>
+    <div class="setup-field" id="custom-deck-fields" style="display:none;">
+      <label class="setup-label">CUSTOM DECK SELECTION (used when "Custom" is chosen)</label>
+      <div class="setup-row">
+        <div class="setup-field"><span style="font-size:10px;color:#705840;">Majesty 1</span><select class="setup-input" id="d1-custom-deck"></select></div>
+        <div class="setup-field"><span style="font-size:10px;color:#705840;">Majesty 2</span><select class="setup-input" id="d2-custom-deck"></select></div>
+      </div>
+    </div>
+    <div class="setup-field">
+      <label class="setup-label">OPTIONS</label>
+      <label class="rl" style="cursor:pointer;"><input type="checkbox" id="opt-autoadvance" style="vertical-align:middle;margin-right:5px;">Auto-advance Draw phase</label>
+      <label class="rl" style="cursor:pointer;"><input type="checkbox" id="opt-sfx" style="vertical-align:middle;margin-right:5px;">Sound effects</label>
+    </div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
       <button class="modal-btn secondary" id="btn-setup-back">Back</button>
       <button class="modal-btn" id="btn-setup-start">Begin Conquest →</button>
@@ -217,9 +306,16 @@ body{font-family:'Georgia',serif;background:#1a0a00;color:#f0e6d0;min-height:100
       <div class="db-title">YOUR DECK</div>
       <div class="db-presets" id="db-presets"></div>
       <div class="db-deck-stats" id="db-deck-stats"></div>
+      <div class="db-curve" id="db-curve"></div>
       <div class="db-deck-list" id="db-deck-list"></div>
-      <button class="db-btn" id="btn-db-save">💾 Save Custom Deck</button>
+      <div class="db-io">
+        <button class="db-btn" id="btn-db-export">⤴ Export</button>
+        <button class="db-btn" id="btn-db-import">⤵ Import</button>
+      </div>
+      <button class="db-btn" id="btn-db-save">💾 Save Deck</button>
       <button class="db-btn" id="btn-db-clear">🗑 Clear</button>
+      <div class="panel-title" style="margin-top:6px;">SAVED DECKS</div>
+      <div class="db-saved" id="db-saved"></div>
       <button class="db-btn sec" id="btn-db-back">← Back to Title</button>
     </div>
     <div class="db-detail-panel">
@@ -275,13 +371,15 @@ body{font-family:'Georgia',serif;background:#1a0a00;color:#f0e6d0;min-height:100
         <button class="action-btn danger" id="btn-combat" disabled>Enter Combat</button>
         <button class="action-btn" id="btn-recover" disabled>Recover Phase</button>
         <button class="action-btn danger" id="btn-end" disabled>End Turn</button>
+        <button class="action-btn" id="btn-undo" disabled style="border-color:#6a5acd;color:#9a8ae0;">↩ Undo</button>
         <button class="action-btn" id="btn-cancel" disabled style="border-color:#555;color:#888;">Cancel</button>
-        <button class="action-btn danger" id="btn-surrender" style="margin-top:8px;border-color:#880000;color:#aa2222;">⚑ Surrender</button>
+        <button class="action-btn" id="btn-mute" aria-label="Toggle sound effects" style="margin-top:8px;">🔊 Sound: On</button>
+        <button class="action-btn danger" id="btn-surrender" style="margin-top:4px;border-color:#880000;color:#aa2222;">⚑ Surrender</button>
       </div>
       <div><div class="panel-title">SELECTED</div><div class="card-detail" id="card-detail"><div style="color:#a08060;font-size:10px;">Click a card to inspect</div></div></div>
       <div style="flex:1;display:flex;flex-direction:column;min-height:0;">
         <div class="panel-title">BATTLE LOG</div>
-        <div class="log-area" id="log-area"></div>
+        <div class="log-area" id="log-area" aria-live="polite" aria-label="Battle log"></div>
       </div>
     </div>
   </div>
@@ -293,6 +391,29 @@ body{font-family:'Georgia',serif;background:#1a0a00;color:#f0e6d0;min-height:100
     <div class="modal-title" id="modal-title"></div>
     <div class="modal-body" id="modal-body"></div>
     <div class="modal-btns" id="modal-btns"></div>
+  </div>
+</div>
+
+<!-- PASS CURTAIN -->
+<div id="pass-curtain">
+  <div class="pass-title" id="pass-curtain-title"></div>
+  <div class="pass-sub">Hand the device to the next Majesty. Your hand and board stay hidden until you begin.</div>
+  <button class="menu-btn" id="pass-begin">Begin Turn</button>
+</div>
+
+<!-- TUTORIAL TOUR -->
+<div id="tour-overlay">
+  <div id="tour-backdrop"></div>
+  <div id="tour-ring"></div>
+  <div id="tour-bubble">
+    <div class="tour-title" id="tour-title"></div>
+    <div class="tour-body" id="tour-body"></div>
+    <div class="tour-nav">
+      <span class="tour-progress" id="tour-progress"></span>
+      <button class="tour-btn skip" id="tour-skip">Skip</button>
+      <button class="tour-btn" id="tour-prev">← Back</button>
+      <button class="tour-btn" id="tour-next">Next →</button>
+    </div>
   </div>
 </div>
 
@@ -363,6 +484,73 @@ var RES_NAME={W:'Water',E:'Earth',F:'Fire',L:'Light',D:'Dark'};
 var RES_EMOJI={W:'💧',E:'🌿',F:'🔥',L:'☀️',D:'🌑'};
 var RES_COLOR={W:'#3a8cc4',E:'#8a6030',F:'#c44a1a',L:'#c8b840',D:'#8a4ab4'};
 
+// ── PERSISTENCE / SETTINGS ────────────────────────────────────────────────────
+var LS_KEYS={decks:'reconquesta_decks',settings:'reconquesta_settings'};
+function lsGet(k,fallback){try{var v=localStorage.getItem(k);return v?JSON.parse(v):fallback;}catch(e){return fallback;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){return false;}}
+var SETTINGS=Object.assign({autoAdvance:true,sfx:true,p1name:'Majesty 1',p2name:'Majesty 2',mode:'pvp',resBefore:'before',deck1:'balanced',deck2:'balanced'},lsGet(LS_KEYS.settings,{}));
+function saveSettings(){lsSet(LS_KEYS.settings,SETTINGS);}
+var SAVED_DECKS=lsGet(LS_KEYS.decks,{});
+function saveSavedDecks(){lsSet(LS_KEYS.decks,SAVED_DECKS);}
+
+// ── AUDIO (WebAudio SFX, no assets) ───────────────────────────────────────────
+var _actx=null,_sfxLast={};
+function audioCtx(){if(!_actx){try{_actx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){_actx=null;}}return _actx;}
+function playSfx(kind){
+  if(!SETTINGS.sfx) return;
+  var now=Date.now();if(_sfxLast[kind]&&now-_sfxLast[kind]<70) return;_sfxLast[kind]=now;
+  var ctx=audioCtx();if(!ctx) return;
+  try{
+    var o=ctx.createOscillator(),g=ctx.createGain(),t=ctx.currentTime;
+    o.connect(g);g.connect(ctx.destination);
+    if(kind==='hit'){o.type='square';o.frequency.setValueAtTime(420,t);o.frequency.exponentialRampToValueAtTime(180,t+0.12);g.gain.setValueAtTime(0.10,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.18);o.start(t);o.stop(t+0.2);}
+    else if(kind==='destroy'){o.type='sawtooth';o.frequency.setValueAtTime(220,t);o.frequency.exponentialRampToValueAtTime(55,t+0.3);g.gain.setValueAtTime(0.14,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.4);o.start(t);o.stop(t+0.42);}
+    else if(kind==='glory'){o.type='triangle';o.frequency.setValueAtTime(160,t);o.frequency.exponentialRampToValueAtTime(70,t+0.5);g.gain.setValueAtTime(0.18,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.55);o.start(t);o.stop(t+0.56);}
+    else if(kind==='place'){o.type='sine';o.frequency.setValueAtTime(520,t);o.frequency.exponentialRampToValueAtTime(660,t+0.08);g.gain.setValueAtTime(0.07,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.12);o.start(t);o.stop(t+0.13);}
+  }catch(e){}
+}
+function updateMuteBtn(){var b=document.getElementById('btn-mute');if(b) b.textContent=SETTINGS.sfx?'🔊 Sound: On':'🔇 Sound: Off';}
+
+// ── COMBAT FX (transient cell animations) ─────────────────────────────────────
+function flagFx(r,c,kind){if(!G._fx) G._fx=[];G._fx.push({r:r,c:c,kind:kind});}
+
+// ── DAMAGE PREVIEW ────────────────────────────────────────────────────────────
+function previewDamageAt(att,r,c){
+  if(!att) return null;
+  var cell=G.cells[r][c];
+  var base=Math.max(0,(att.atk||0)+(att.atkMod||0)+(G.energyDrainActive?-2:0));
+  var tgt=null;
+  for(var i=0;i<DMG_ORDER.length;i++){var u=cell[DMG_ORDER[i]];if(u&&u.owner!==att.owner){tgt=u;break;}}
+  if(!tgt&&cell.obstacle&&(cell.obstacle.hp||0)>0) tgt=cell.obstacle;
+  if(!tgt) return null;
+  var wb=G.armorActive?0:weakDmg(att,tgt);
+  var tot=base+wb;
+  return {dmg:tot,mult:wb,lethal:tot>=(tgt.currentHp||0),name:tgt.name};
+}
+
+// ── UNDO ──────────────────────────────────────────────────────────────────────
+function pushUndo(){
+  try{
+    G.undoStack.push(JSON.stringify({cells:G.cells,players:G.players,cellar:G.cellar,charge:G.charge,activePlayer:G.activePlayer,phase:G.phase,log:G.log,armorActive:G.armorActive,energyDrainActive:G.energyDrainActive}));
+    if(G.undoStack.length>25) G.undoStack.shift();
+  }catch(e){}
+}
+function doUndo(){
+  if(!G.undoStack||!G.undoStack.length) return;
+  var s;try{s=JSON.parse(G.undoStack.pop());}catch(e){return;}
+  G.cells=s.cells;G.players=s.players;G.cellar=s.cellar;G.charge=s.charge;G.activePlayer=s.activePlayer;G.phase=s.phase;G.log=s.log;G.armorActive=s.armorActive;G.energyDrainActive=s.energyDrainActive;
+  G.selectedCard=null;G.actionMode=null;G.highlightCells=[];G.aoeTargetSelect=null;
+  addLog('↩ Undid last action.','important');refreshUI();
+}
+
+// ── TURN START / AUTO-ADVANCE ─────────────────────────────────────────────────
+function beginTurnUI(){
+  refreshUI();
+  if(SETTINGS.autoAdvance&&!G._tutorial&&G.phase==='draw'&&!(G.mode==='ai'&&G.activePlayer===1)&&!G.players[G.activePlayer].drawnThisTurn){
+    doDrawPhase();
+  }
+}
+
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function weakDmg(att,def){
   if(!def.weakness) return 0;
@@ -427,7 +615,7 @@ function removeObs(inst){
   if(inst.satelliteCells) inst.satelliteCells.forEach(function(rc){if(G.cells[rc[0]][rc[1]].obstacle===inst)G.cells[rc[0]][rc[1]].obstacle=null;});
 }
 function applyDmgToCell(r,c,dmg,attCard,isSplash){
-  var cell=G.cells[r][c],rem=dmg;
+  var cell=G.cells[r][c],rem=dmg,hitSomething=false;
   DMG_ORDER.forEach(function(lk){
     if(rem<=0) return;
     var tgt=cell[lk];
@@ -436,9 +624,11 @@ function applyDmgToCell(r,c,dmg,attCard,isSplash){
     var wb=attCard?weakDmg(attCard,tgt):0;
     var tot=rem+wb;
     tgt.currentHp=Math.max(0,(tgt.currentHp||0)-tot);
+    hitSomething=true;
     addLog('  '+tgt.name+' takes '+tot+' dmg ('+tgt.currentHp+' HP left)','combat');
     if(tgt.currentHp<=0){
       addLog('  '+tgt.name+' destroyed!','combat');
+      flagFx(r,c,'destroy');playSfx('destroy');
       if(G.players[tgt.owner]) G.players[tgt.owner].discard.push(tgt.id);
       cell[lk]=null; rem=Math.max(0,rem-tot);
     } else {rem=0;}
@@ -447,8 +637,10 @@ function applyDmgToCell(r,c,dmg,attCard,isSplash){
     var obs=cell.obstacle;
     var wb2=attCard?weakDmg(attCard,obs):0;
     obs.currentHp=Math.max(0,(obs.currentHp||0)-(rem+wb2));
-    if(obs.currentHp<=0){addLog('  '+obs.name+' destroyed!','combat');removeObs(obs);}
+    hitSomething=true;
+    if(obs.currentHp<=0){addLog('  '+obs.name+' destroyed!','combat');flagFx(r,c,'destroy');playSfx('destroy');removeObs(obs);}
   }
+  if(hitSomething){flagFx(r,c,'hit');playSfx('hit');}
 }
 
 // ── GAME STATE ────────────────────────────────────────────────────────────────
@@ -464,7 +656,8 @@ function initGame(p1n,p2n,mode,d1ids,d2ids,resBefore){
     cells:Array.from({length:8},function(){return Array.from({length:5},emptyCell);}),
     selectedCard:null,actionMode:null,highlightCells:[],
     log:[],effectsThisTurn:[],
-    armorActive:false,energyDrainActive:false,aoeTargetSelect:null
+    armorActive:false,energyDrainActive:false,aoeTargetSelect:null,
+    undoStack:[],_fx:[],_tutorial:false
   };
   if(resBefore==='after'){for(var i=0;i<5;i++){drawCard(0);drawCard(1);}}
 }
@@ -640,6 +833,7 @@ function doAttack(tr,tc){
 
 function doDirectGloryStrike(r,c,att,atkVal,opp){
   att.attackedThisTurn=true;att.exhausted=true;
+  flagFx(r,c,'glory');playSfx('glory');
   G.players[opp].glory=Math.max(0,G.players[opp].glory-atkVal);
   addLog('GLORY STRIKE! '+att.name+' attacks '+G.players[opp].name+' for '+atkVal+'! ('+G.players[opp].glory+' Glory left)','important');
   G.actionMode=null;G.highlightCells=[];G.selectedCard=null;
@@ -761,6 +955,7 @@ function placeCard(r,c,anyChoices){
     showUniversalCostModal(card.cost.any,ap,function(choices){placeCard(window._pendingPlace.r,window._pendingPlace.c,choices);});
     return;
   }
+  pushUndo();
   spendRes(ap,card.cost||{},anyChoices||[]);
   if(card.multiCell){
     placeMultiObs(r,c,card,ap);
@@ -774,6 +969,7 @@ function placeCard(r,c,anyChoices){
   if(card.id==='abandoned_barn') showResChoiceModal(ap);
   G.players[ap].hand.splice(idx,1);
   addLog(G.players[ap].name+' places '+card.name+'!',ap===0?'p1':'p2');
+  playSfx('place');
   checkSorcererTrigger(ap,card);
   G.selectedCard=null;G.actionMode=null;G.highlightCells=[];refreshUI();
 }
@@ -820,6 +1016,7 @@ function startMove(){
   addLog('Choose destination.');refreshUI();
 }
 function moveUnit(tr,tc){
+  pushUndo();
   var row=G.selectedCard.row,col=G.selectedCard.col;
   var srcCell=G.cells[row][col];
   var unit=srcCell.conqueror||srcCell.artillery;
@@ -844,7 +1041,7 @@ function moveUnit(tr,tc){
 
 // ── COMBAT PHASE ──────────────────────────────────────────────────────────────
 function enterCombat(){
-  G.phase='combat';G.armorActive=false;G.energyDrainActive=false;
+  G.phase='combat';G.armorActive=false;G.energyDrainActive=false;G.undoStack=[];
   if(G.selectedCard&&G.selectedCard.source==='cell'){
     var cell=G.cells[G.selectedCard.row][G.selectedCard.col];
     var attackers=[];
@@ -948,6 +1145,7 @@ function playActionCard(idx){
 }
 function resolveActionCard(idx,anyChoices){
   var ap=G.activePlayer,p=G.players[ap],card=p.hand[idx],opp=1-ap;
+  pushUndo();
   spendRes(ap,card.cost||{},anyChoices);
   if(card.id==='armor'){G.armorActive=true;addLog('Armor: no Weaknesses this Combat Phase!','important');}
   else if(card.id==='energy_drain'){G.energyDrainActive=true;addLog('Energy Drain: all attacks -2 ATK!','important');}
@@ -1006,10 +1204,10 @@ function endTurn(){
   checkFCLoss(ap);
   G.activePlayer=1-ap;
   if(G.activePlayer===0) G.charge++;
-  G.phase='draw';G.selectedCard=null;G.actionMode=null;G.highlightCells=[];
+  G.phase='draw';G.selectedCard=null;G.actionMode=null;G.highlightCells=[];G.undoStack=[];
   if(G.mode==='ai'&&G.activePlayer===1){refreshUI();setTimeout(doAITurn,900);}
   else if(G.mode==='pvp') showPassModal();
-  else refreshUI();
+  else beginTurnUI();
 }
 function checkFCLoss(pi){
   var p=G.players[pi];if(!p.inFinalCharge) return;
@@ -1152,6 +1350,7 @@ function finalizeSetup(){
   refreshUI();
   if(G.mode==='pvp') showPassModal();
   else if(G.mode==='ai'&&G.activePlayer===1) setTimeout(doAITurn,900);
+  else beginTurnUI();
 }
 
 // ── AI ────────────────────────────────────────────────────────────────────────
@@ -1203,6 +1402,7 @@ function doAITurn(){
         var atkVal2=Math.max(0,(u.atk||0)+(u.atkMod||0));
         G.players[0].glory=Math.max(0,G.players[0].glory-atkVal2);
         u.attackedThisTurn=true;
+        flagFx(r2,c2b,'glory');playSfx('glory');
         addLog('AI glory strike! '+G.players[0].name+' loses '+atkVal2+' Glory!','important');
         checkWin();continue;
       }
@@ -1222,7 +1422,7 @@ function doAITurn(){
       }
       p.pillagedThisTurn=false;p.drawnThisTurn=false;
       checkFCLoss(1);G.activePlayer=0;G.charge++;G.phase='draw';
-      G.selectedCard=null;G.actionMode=null;G.highlightCells=[];refreshUI();
+      G.selectedCard=null;G.actionMode=null;G.highlightCells=[];G.undoStack=[];beginTurnUI();
     },700);
   },700);
 }
@@ -1267,19 +1467,32 @@ function renderBF(){
       }
       var lyr3=document.createElement('div');
       var own=unit.owner!==undefined?' p'+(unit.owner+1):'';
+      var ownTag=(unit.owner===0||unit.owner===1)?'<span class="own-tag own'+(unit.owner+1)+'" title="Player '+(unit.owner+1)+'">'+(unit.owner+1)+'</span>':'';
       var fd=lk.key==='trap'&&!unit.revealed;
       lyr3.className='cell-layer layer-'+lk.type+own+(unit.exhausted?' layer-exhausted':'')+(fd?' facedown':'');
       if(isSel&&(lk.key==='conqueror'||lk.key==='artillery')) lyr3.style.borderWidth='2px';
       var hpPct=unit.maxhp?Math.round(((unit.currentHp||0)/unit.maxhp)*100):100;
       var atk=(unit.atk||0)+(unit.atkMod||0);
       if(fd){lyr3.innerHTML='<div class="layer-name">???</div>';}
-      else{lyr3.innerHTML='<div class="layer-name">'+unit.name+'</div>'+((unit.atk||0)>0?'<div class="layer-stats"><span>\u2694'+atk+'</span><span>\u2764'+(unit.currentHp||0)+'</span></div>':'')+((unit.hp||0)>0?'<div class="layer-hp"><div class="layer-hp-fill" style="width:'+hpPct+'%"></div></div>':'');}
+      else{lyr3.innerHTML='<div class="layer-name">'+ownTag+unit.name+'</div>'+((unit.atk||0)>0?'<div class="layer-stats"><span>\u2694'+atk+'</span><span>\u2764'+(unit.currentHp||0)+'</span></div>':'')+((unit.hp||0)>0?'<div class="layer-hp"><div class="layer-hp-fill" style="width:'+hpPct+'%"></div></div>':'');}
       stack.appendChild(lyr3);
     });
     div.appendChild(stack);
+    if(G.actionMode==='attack'&&G.selectedCard&&G.selectedCard.source==='cell'&&hl&&hl.type==='attack'){
+      var pv=previewDamageAt(G.selectedCard.card,r,c);
+      if(pv){
+        var bd=document.createElement('div');
+        bd.className='dmg-badge'+(pv.lethal?' lethal':'');
+        bd.innerHTML=(pv.lethal?'☠':'')+pv.dmg+(pv.mult>0?'<span class="wk">+'+pv.mult+'</span>':'');
+        bd.title='Deals '+pv.dmg+' to '+pv.name+(pv.mult>0?' (weakness +'+pv.mult+')':'')+(pv.lethal?' — lethal!':'');
+        div.appendChild(bd);
+      }
+    }
+    if(G._fx&&G._fx.length){G._fx.forEach(function(f){if(f.r===r&&f.c===c) div.classList.add('fx-'+f.kind);});}
     (function(row,col){div.onclick=function(){if(['strategize','combat','recover'].indexOf(G.phase)>=0||G.actionMode) onCellClick(row,col);};})(r,c);
     bf.appendChild(div);
   }
+  G._fx=[];
 }
 
 function renderHand(){
@@ -1338,6 +1551,7 @@ function renderBtns(){
   b('btn-recover').disabled=ph!=='combat'||inAI;
   b('btn-end').disabled=(ph!=='strategize'&&ph!=='combat'&&ph!=='recover')||inAI;
   b('btn-cancel').disabled=!G.actionMode||inAI;
+  b('btn-undo').disabled=(ph!=='strategize'&&ph!=='recover')||inAI||!G.undoStack||!G.undoStack.length;
 }
 function renderDeck(){
   var ap=G.activePlayer,p=G.players[ap];
@@ -1366,11 +1580,11 @@ function showCardDetail(card){
 }
 
 // ── DECK BUILDER ──────────────────────────────────────────────────────────────
-var DB={deck:[],filter:'All',selectedCard:null};
+var DB={deck:[],filter:'All',selectedCard:null,editingName:null};
 
 function initDeckBuilder(){
-  DB.deck=[];DB.filter='All';DB.selectedCard=null;
-  renderDBFilters();renderDBLibrary();renderDBDeck();renderDBDetail(null);
+  DB.deck=[];DB.filter='All';DB.selectedCard=null;DB.editingName=null;
+  renderDBFilters();renderDBLibrary();renderDBDeck();renderDBDetail(null);renderDBSaved();
 }
 function renderDBFilters(){
   var el=document.getElementById('db-filters');el.innerHTML='';
@@ -1429,6 +1643,7 @@ window.dbSelectCard=function(id){
   renderDBDetail(DB.selectedCard);
 };
 function renderDBDeck(){
+  renderDBCurve();
   var el=document.getElementById('db-deck-list');el.innerHTML='';
   var tot=DB.deck.length,valid=tot>=40&&tot<=60;
   document.getElementById('db-deck-stats').innerHTML='Deck: <b style="color:'+(valid?'#00cc66':'#cc4422')+'">'+tot+'</b>/40-60 '+(valid?'<span class="db-deck-valid">\u2713</span>':'<span class="db-deck-invalid">\u2717</span>');
@@ -1518,6 +1733,108 @@ function saveCustomDeck(){
   showModal('Deck Saved!','Custom deck ('+t+' cards) saved and ready.',[{label:'Great!',fn:closeModal}]);
 }
 
+// ── DECK BUILDER: SAVE / CURVE / IMPORT-EXPORT (overrides above) ──────────────
+function sanitizeName(n){return (n||'').replace(/['"\\]/g,'').trim().substring(0,24)||'My Deck';}
+function saveCustomDeck(){
+  var t=DB.deck.length;
+  if(t<40||t>60){showModal('Invalid Deck',t+' cards — must be 40-60 (currently '+t+').',[{label:'OK',fn:closeModal}]);return;}
+  var def=(DB.editingName||'My Deck').replace(/"/g,'');
+  var html='<div style="font-size:12px;margin-bottom:8px;">Name your deck ('+t+' cards). It saves in this browser and becomes available under "Custom" in Setup.</div>'
+    +'<input id="deck-name-input" class="setup-input" maxlength="24" value="'+def+'">';
+  showModal('Save Deck',html,[
+    {label:'Save',fn:function(){
+      var nm=sanitizeName((document.getElementById('deck-name-input')||{}).value);
+      SAVED_DECKS[nm]=DB.deck.slice();saveSavedDecks();DECKS.custom=DB.deck.slice();DB.editingName=nm;
+      closeModal();renderDBSaved();refreshCustomDeckOptions();
+      showModal('Deck Saved','"'+nm+'" saved ('+t+' cards). In Setup, choose "Custom" and pick it from the dropdown.',[{label:'Great!',fn:closeModal}]);
+    }},
+    {label:'Cancel',fn:closeModal,secondary:true}
+  ]);
+}
+function renderDBSaved(){
+  var el=document.getElementById('db-saved');if(!el) return;
+  var names=Object.keys(SAVED_DECKS);
+  if(!names.length){el.innerHTML='<div style="font-size:9px;color:#705840;">No saved decks yet. Build one and press Save.</div>';return;}
+  el.innerHTML=names.map(function(nm){
+    return '<div class="db-saved-row"><span class="db-saved-name" title="'+nm+'">'+nm+' <span style="color:#705840">('+SAVED_DECKS[nm].length+')</span></span>'
+      +'<button onclick="dbLoadSaved(\''+nm+'\')">Load</button>'
+      +'<button onclick="dbDelSaved(\''+nm+'\')" style="color:#cc4422" aria-label="Delete deck">✕</button></div>';
+  }).join('');
+}
+window.dbLoadSaved=function(nm){if(SAVED_DECKS[nm]){DB.deck=SAVED_DECKS[nm].slice();DB.editingName=nm;DB.selectedCard=null;renderDBLibrary();renderDBDeck();renderDBDetail(null);}};
+window.dbDelSaved=function(nm){if(SAVED_DECKS[nm]){delete SAVED_DECKS[nm];saveSavedDecks();renderDBSaved();refreshCustomDeckOptions();}};
+function refreshCustomDeckOptions(){
+  var any=Object.keys(SAVED_DECKS).length>0;
+  var cf=document.getElementById('custom-deck-fields');if(cf) cf.style.display=any?'':'none';
+  ['d1-custom-deck','d2-custom-deck'].forEach(function(id){
+    var sel=document.getElementById(id);if(!sel) return;
+    var prev=sel.value;sel.innerHTML='';
+    var names=Object.keys(SAVED_DECKS);
+    if(!names.length){var o=document.createElement('option');o.value='';o.textContent='(none saved)';sel.appendChild(o);}
+    names.forEach(function(nm){var op=document.createElement('option');op.value=nm;op.textContent=nm+' ('+SAVED_DECKS[nm].length+')';sel.appendChild(op);});
+    if(prev&&SAVED_DECKS[prev]) sel.value=prev;
+  });
+}
+function renderDBCurve(){
+  var el=document.getElementById('db-curve');if(!el) return;
+  if(!DB.deck.length){el.innerHTML='<div class="db-curve-title">COST CURVE</div><div style="font-size:9px;color:#705840;">Add cards to see the cost curve.</div>';return;}
+  var buckets=[0,0,0,0,0,0],elem={W:0,E:0,F:0,L:0,D:0,NA:0};
+  DB.deck.forEach(function(id){
+    var c=CARDS[id];if(!c) return;
+    var tc=0;for(var k in (c.cost||{})) tc+=c.cost[k];
+    var b=Math.min(tc,6);if(b<1) b=1;buckets[b-1]++;
+    var a=(c.attr&&c.attr!=='NA'&&c.attr!=='Universal')?c.attr:'NA';elem[a]=(elem[a]||0)+1;
+  });
+  var max=Math.max.apply(null,buckets)||1,labels=['1','2','3','4','5','6+'];
+  var html='<div class="db-curve-title">COST CURVE</div>';
+  buckets.forEach(function(v,i){
+    html+='<div class="curve-row"><span class="curve-label">'+labels[i]+'❖</span>'
+      +'<span class="curve-bar-wrap"><span class="curve-bar" style="width:'+Math.round(v/max*100)+'%"></span></span>'
+      +'<span class="curve-count">'+v+'</span></div>';
+  });
+  html+='<div class="elem-pips">';
+  ['W','E','F','L','D','NA'].forEach(function(a){
+    if(!elem[a]) return;var col=a==='NA'?'#888':RES_COLOR[a];
+    html+='<span class="elem-pip"><span style="width:9px;height:9px;border-radius:50%;background:'+col+';display:inline-block;"></span>'+(a==='NA'?'Univ':a)+' '+elem[a]+'</span>';
+  });
+  html+='</div>';
+  el.innerHTML=html;
+}
+function dbEncode(deck){try{return btoa(unescape(encodeURIComponent(JSON.stringify(deck))));}catch(e){return '';}}
+function dbDecode(code){try{var arr=JSON.parse(decodeURIComponent(escape(atob((code||'').trim()))));return Array.isArray(arr)?arr:null;}catch(e){return null;}}
+function dbExport(){
+  if(!DB.deck.length){showModal('Nothing to Export','Your deck is empty.',[{label:'OK',fn:closeModal}]);return;}
+  var code=dbEncode(DB.deck);
+  var html='<div style="font-size:12px;margin-bottom:8px;">Copy this code to share or back up your deck ('+DB.deck.length+' cards):</div>'
+    +'<textarea id="db-export-code" readonly style="width:100%;height:90px;background:#0d0500;border:1px solid #3d2000;color:#f0e6d0;font-family:monospace;font-size:11px;border-radius:3px;padding:6px;" onclick="this.select()">'+code+'</textarea>';
+  showModal('Export Deck',html,[
+    {label:'Copy',fn:function(){var ta=document.getElementById('db-export-code');if(ta){ta.select();try{navigator.clipboard.writeText(ta.value);}catch(e){try{document.execCommand('copy');}catch(e2){}}}}},
+    {label:'Close',fn:closeModal,secondary:true}
+  ]);
+}
+function dbImport(){
+  var html='<div style="font-size:12px;margin-bottom:8px;">Paste a deck code:</div>'
+    +'<textarea id="db-import-code" style="width:100%;height:90px;background:#0d0500;border:1px solid #3d2000;color:#f0e6d0;font-family:monospace;font-size:11px;border-radius:3px;padding:6px;"></textarea>'
+    +'<div id="db-import-status" style="font-size:11px;color:#cc4422;min-height:14px;margin-top:4px;"></div>';
+  showModal('Import Deck',html,[
+    {label:'Load',fn:function(){
+      var arr=dbDecode((document.getElementById('db-import-code')||{}).value),st=document.getElementById('db-import-status');
+      if(!arr){if(st) st.textContent='Invalid or unreadable code.';return;}
+      var counts={},result=[];
+      arr.forEach(function(id){
+        if(!CARDS[id]||result.length>=60) return;
+        var mx=CARDS[id].max||3;counts[id]=counts[id]||0;
+        if(counts[id]<mx){counts[id]++;result.push(id);}
+      });
+      if(!result.length){if(st) st.textContent='No valid cards found in code.';return;}
+      DB.deck=result;DB.selectedCard=null;DB.editingName=null;closeModal();renderDBLibrary();renderDBDeck();renderDBDetail(null);
+      var skipped=arr.length-result.length;
+      showModal('Imported',result.length+' cards loaded'+(skipped>0?' ('+skipped+' skipped — invalid id or over copy/size limit).':'.'),[{label:'OK',fn:closeModal}]);
+    }},
+    {label:'Cancel',fn:closeModal,secondary:true}
+  ]);
+}
+
 // ── CARD LIBRARY MODAL ────────────────────────────────────────────────────────
 function showCardList(){
   var html='<div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;max-height:55vh;overflow-y:auto;">';
@@ -1591,7 +1908,9 @@ function showModal(title,body,btns){
 }
 function closeModal(){document.getElementById('modal').classList.remove('active');}
 function showPassModal(){
-  showModal('Pass to '+G.players[G.activePlayer].name,"It's <b>"+G.players[G.activePlayer].name+"</b>'s turn.",[{label:'Begin Turn',fn:function(){closeModal();refreshUI();}}]);
+  var t=document.getElementById('pass-curtain-title');
+  if(t) t.textContent=G.players[G.activePlayer].name+"'s Turn";
+  document.getElementById('pass-curtain').classList.add('active');
 }
 
 // ── SCREEN / SURRENDER ───────────────────────────────────────────────────────
@@ -1617,11 +1936,80 @@ function showRules(){
     +'<b>Walls:</b> Multi-cell obstacles span left-to-right in A/D zones. Click the left anchor cell to place.<br><br>'
     +'<b>Terrain:</b> Move the matching attribute Conqueror onto terrain to clear it.<br><br>'
     +'<b>Sorcerers:</b> Draw 1 card when you recruit a Conqueror matching the Sorcerer\'s attribute.<br><br>'
-    +'<b>Deck Builder:</b> 40-60 cards. Max 3 copies per card.',
+    +'<b>Deck Builder:</b> 40-60 cards. Max 3 copies per card. Save decks (they persist), export/import codes, and check the cost curve.<br><br>'
+    +'<b>Controls:</b> Keyboard — D/P/S/R/M/C/E for phases, U to undo, Esc to cancel. New here? Try the <b>Interactive Tutorial</b> from the title screen.',
     [{label:'Close',fn:closeModal}]);
 }
 
+// ── INTERACTIVE TUTORIAL ──────────────────────────────────────────────────────
+var TUTORIAL_STEPS=[
+  {title:'Welcome, Majesty!',body:'A quick guided tour of the battle screen. Use <b>Next</b> / <b>Back</b>, or <b>Skip</b> to jump in. A practice match vs the AI is already running behind this tour — when it ends you can keep playing.'},
+  {sel:'.phase-bar',title:'Turn Phases',body:'Each turn flows left to right: <b>Draw → Pillage → Strategize → Combat → Recover → End</b>. The lit tab is your current phase.'},
+  {sel:'#opp-glory',title:'Glory = Life',body:'Both Majesties start at <b>20 Glory</b>. Drop your opponent\'s Glory to 0 to win. Your own Glory shows below the battlefield.'},
+  {sel:'#btn-draw',title:'1 · Draw',body:'Each turn starts by drawing a card. With <b>auto-advance</b> on, this happens for you automatically.'},
+  {sel:'#btn-pillage',title:'2 · Pillage',body:'Gather resources — pick <b>3 different</b> types or <b>2 of one</b>. Resources pay for your cards.'},
+  {sel:'#hand-area',title:'Your Hand',body:'Click a card to select it and view details. Dimmed cards are ones you can\'t afford yet.'},
+  {sel:'#btn-recruit',title:'3 · Recruit / Play',body:'With a card selected, click here, then a glowing cell to place a unit (in your Recruit Zone) or to play an Action.'},
+  {sel:'#battlefield',title:'The Battlefield',body:'An 8×5 grid. Your Recruit Zone is at the bottom. March Conquerors up into the enemy Recruit Zone to strike their Glory. The small <b>1</b>/<b>2</b> badges show unit ownership.'},
+  {sel:'#btn-combat',title:'4 · Combat',body:'Select a unit, enter Combat, then click a target. Attack cells show a <b>damage preview</b> — gold means lethal, and weakness bonuses are already included!'},
+  {sel:'#btn-undo',title:'Undo',body:'Misclick? <b>Undo</b> reverts your moves, placements and actions during a turn (until combat resolves).'},
+  {sel:'#btn-end',title:'5 · End Turn',body:'Done? End your turn and hand off to your opponent (or let the AI respond).'},
+  {sel:'#log-area',title:'Battle Log & Shortcuts',body:'Every action is logged here. Keyboard: <b>D</b>raw, <b>P</b>illage, <b>S</b>trategize, <b>R</b>ecruit, <b>M</b>ove, <b>C</b>ombat, <b>E</b>nd, <b>U</b>ndo, <b>Esc</b> cancel.'},
+  {title:'You\'re ready!',body:'That\'s the core loop. The practice match vs the AI is live — finish the tour and play on. Good luck, Majesty!'}
+];
+var _tour={steps:[],i:0,onDone:null};
+function startTutorial(){
+  initGame('You','Trainer (AI)','ai',DECKS.balanced.slice(),DECKS.balanced.slice(),'before');
+  G._tutorial=true;G.activePlayer=0;G.phase='draw';
+  for(var i=0;i<5;i++){drawCard(0);drawCard(1);}
+  RES.forEach(function(t){gainRes(0,t,2);gainRes(1,t,1);});
+  addLog('Tutorial practice match — vs Trainer (AI).','important');
+  showScreen('game-screen');refreshUI();
+  startTour(TUTORIAL_STEPS,function(){G._tutorial=false;addLog('Tutorial complete — your move, Majesty!','important');refreshUI();});
+}
+function startTour(steps,onDone){_tour.steps=steps;_tour.i=0;_tour.onDone=onDone||function(){};document.getElementById('tour-overlay').classList.add('active');renderTourStep();}
+function endTour(){document.getElementById('tour-overlay').classList.remove('active');var d=_tour.onDone;_tour.onDone=null;if(d) d();}
+function tourNext(){if(_tour.i>=_tour.steps.length-1){endTour();return;}_tour.i++;renderTourStep();}
+function tourPrev(){if(_tour.i>0){_tour.i--;renderTourStep();}}
+function renderTourStep(){
+  var s=_tour.steps[_tour.i];
+  var ring=document.getElementById('tour-ring');
+  var target=s.sel?document.querySelector(s.sel):null;
+  if(target){var r=target.getBoundingClientRect();ring.style.display='block';ring.style.left=(r.left-5)+'px';ring.style.top=(r.top-5)+'px';ring.style.width=(r.width+10)+'px';ring.style.height=(r.height+10)+'px';}
+  else ring.style.display='none';
+  document.getElementById('tour-title').innerHTML=s.title;
+  document.getElementById('tour-body').innerHTML=s.body;
+  document.getElementById('tour-progress').textContent=(_tour.i+1)+' / '+_tour.steps.length;
+  document.getElementById('tour-prev').style.visibility=_tour.i>0?'visible':'hidden';
+  document.getElementById('tour-next').textContent=_tour.i===_tour.steps.length-1?'Finish ✓':'Next →';
+  positionTourBubble(target);
+}
+function positionTourBubble(target){
+  var b=document.getElementById('tour-bubble');
+  b.style.maxWidth=Math.min(300,window.innerWidth-24)+'px';
+  var bw=b.offsetWidth,bh=b.offsetHeight,W=window.innerWidth,H=window.innerHeight,pad=12,left,top;
+  if(target){
+    var r=target.getBoundingClientRect();
+    top=r.bottom+pad;
+    if(top+bh>H-pad) top=r.top-bh-pad;
+    left=r.left+r.width/2-bw/2;
+  } else {left=W/2-bw/2;top=H/2-bh/2;}
+  left=Math.max(pad,Math.min(left,W-bw-pad));
+  top=Math.max(pad,Math.min(top,H-bh-pad));
+  b.style.left=left+'px';b.style.top=top+'px';
+}
+
 // ── START GAME ────────────────────────────────────────────────────────────────
+function resolveSetupDeck(which,k){
+  if(k==='custom'){
+    var sel=document.getElementById(which==='deck1'?'d1-custom-deck':'d2-custom-deck');
+    var nm=sel&&sel.value;
+    if(nm&&SAVED_DECKS[nm]) return SAVED_DECKS[nm].slice();
+    if(DECKS.custom) return DECKS.custom.slice();
+    return null;
+  }
+  return (DECKS[k]||DECKS.balanced).slice();
+}
 function startGame(){
   var p1=document.getElementById('p1name').value||'Majesty 1';
   var p2=document.getElementById('p2name').value||'Majesty 2';
@@ -1629,8 +2017,12 @@ function startGame(){
   var resBefore=document.querySelector('input[name="resbefore"]:checked').value;
   var d1k=document.querySelector('input[name="deck1"]:checked').value;
   var d2k=document.querySelector('input[name="deck2"]:checked').value;
-  if((d1k==='custom'||d2k==='custom')&&!DECKS.custom){showModal('No Custom Deck','Build a custom deck in the Deck Builder first.',[{label:'OK',fn:closeModal}]);return;}
-  var d1=DECKS[d1k]||DECKS.balanced,d2=DECKS[d2k]||DECKS.balanced;
+  var d1=resolveSetupDeck('deck1',d1k),d2=resolveSetupDeck('deck2',d2k);
+  if(!d1||!d2){showModal('No Custom Deck','Pick a saved deck from the Custom dropdown, or build one in the Deck Builder first.',[{label:'OK',fn:closeModal}]);return;}
+  var aa=document.getElementById('opt-autoadvance'),sx=document.getElementById('opt-sfx');
+  if(aa) SETTINGS.autoAdvance=aa.checked;if(sx) SETTINGS.sfx=sx.checked;
+  SETTINGS.p1name=p1;SETTINGS.p2name=p2;SETTINGS.mode=mode;SETTINGS.resBefore=resBefore;SETTINGS.deck1=d1k;SETTINGS.deck2=d2k;
+  saveSettings();updateMuteBtn();
   initGame(p1,p2,mode,d1,d2,resBefore);
   showScreen('game-screen');
   var r1=Math.floor(Math.random()*6)+Math.floor(Math.random()*6)+2;
@@ -1667,6 +2059,38 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('btn-end').onclick         =function(){endTurn();};
   document.getElementById('btn-cancel').onclick      =function(){cancelAction();};
   document.getElementById('btn-surrender').onclick   =function(){confirmSurrender();};
+  document.getElementById('btn-tutorial').onclick    =function(){startTutorial();};
+  document.getElementById('btn-undo').onclick        =function(){doUndo();};
+  document.getElementById('btn-mute').onclick        =function(){SETTINGS.sfx=!SETTINGS.sfx;saveSettings();updateMuteBtn();var o=document.getElementById('opt-sfx');if(o) o.checked=SETTINGS.sfx;if(SETTINGS.sfx) playSfx('place');};
+  document.getElementById('pass-begin').onclick      =function(){document.getElementById('pass-curtain').classList.remove('active');beginTurnUI();};
+  document.getElementById('btn-db-export').onclick   =function(){dbExport();};
+  document.getElementById('btn-db-import').onclick   =function(){dbImport();};
+  document.getElementById('tour-next').onclick       =tourNext;
+  document.getElementById('tour-prev').onclick       =tourPrev;
+  document.getElementById('tour-skip').onclick       =endTour;
+  window.addEventListener('resize',function(){if(document.getElementById('tour-overlay').classList.contains('active')) renderTourStep();});
+  // restore persisted setup form + options
+  function setRadio(name,val){var el=document.querySelector('input[name="'+name+'"][value="'+val+'"]');if(el) el.checked=true;}
+  document.getElementById('p1name').value=SETTINGS.p1name;
+  document.getElementById('p2name').value=SETTINGS.p2name;
+  setRadio('mode',SETTINGS.mode);setRadio('resbefore',SETTINGS.resBefore);
+  setRadio('deck1',SETTINGS.deck1);setRadio('deck2',SETTINGS.deck2);
+  document.getElementById('opt-autoadvance').checked=!!SETTINGS.autoAdvance;
+  document.getElementById('opt-sfx').checked=!!SETTINGS.sfx;
+  refreshCustomDeckOptions();updateMuteBtn();
+  // keyboard shortcuts (game screen only)
+  document.addEventListener('keydown',function(e){
+    if(!document.getElementById('game-screen').classList.contains('active')) return;
+    if(document.getElementById('modal').classList.contains('active')) return;
+    if(document.getElementById('pass-curtain').classList.contains('active')) return;
+    if(document.getElementById('tour-overlay').classList.contains('active')) return;
+    var tag=(e.target&&e.target.tagName)||'';if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
+    var k=(e.key||'').toLowerCase();
+    if(k==='escape'){var cb=document.getElementById('btn-cancel');if(cb&&!cb.disabled) cancelAction();return;}
+    var map={d:'btn-draw',p:'btn-pillage',s:'btn-strategize',r:'btn-recruit',m:'btn-move',c:'btn-combat',v:'btn-recover',e:'btn-end',u:'btn-undo'};
+    var id=map[k];if(!id) return;
+    var b=document.getElementById(id);if(b&&!b.disabled){b.click();e.preventDefault();}
+  });
   var presets=document.getElementById('db-presets');
   [{n:'Balanced',k:'balanced'},{n:'\ud83d\udd25',k:'fire'},{n:'\ud83d\udca7',k:'water'},{n:'\ud83c\udf11',k:'dark'},{n:'\ud83c\udf0d',k:'earth'},{n:'\u2728',k:'light'}].forEach(function(p){
     var btn=document.createElement('button');btn.className='db-preset-btn';btn.textContent=p.n;
