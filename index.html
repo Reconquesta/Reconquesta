@@ -1647,9 +1647,10 @@ function startGame(){
 
 // ── WIRE BUTTONS ──────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded',function(){
-  document.getElementById('btn-new-game').onclick    =function(){showScreen('setup-screen');};
+  document.getElementById('btn-new-game').onclick=function(){showScreen('setup-screen');};
+  document.getElementById('btn-tutorial').onclick=function(){InteractiveTutorial.start();};
   document.getElementById('btn-deck-builder').onclick=function(){showScreen('deckbuilder-screen');initDeckBuilder();};
-  document.getElementById('btn-rules').onclick       =function(){showRules();};
+  document.getElementById('btn-rules').onclick=function(){showRules();};
   document.getElementById('btn-card-library').onclick=function(){showCardList();};
   document.getElementById('btn-setup-back').onclick  =function(){showScreen('title-screen');};
   document.getElementById('btn-setup-start').onclick =function(){startGame();};
@@ -1673,6 +1674,419 @@ document.addEventListener('DOMContentLoaded',function(){
     btn.onclick=function(){loadPreset(p.k);};presets.appendChild(btn);
   });
 });
+
+// ── Interactive Tutorial module ───────────────────────────────────────────────
+// All tutorial-specific logic is isolated here. Normal game functions are
+// patched only while the tutorial is active and fully restored on exit.
+var InteractiveTutorial=(function(){
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  var _step=0,_active=false,_waitingForAction=false,_actionType=null;
+  var _tutTurn=1; // tracks which scripted turn we are on (1 or 2)
+  var _origDraw,_origPillage,_origStrategize,_origRecruit,_origCombat,_origEndTurn;
+  var _patchesApplied=false;
+
+  // ── Fixed tutorial hand (5 cards, always the same) ─────────────────────────
+  // Soldier (Conqueror), Cannon (Artillery), Small Stone Wall (Obstacle),
+  // Rain Spell (Action), Archer (Conqueror backup)
+  var TUT_HAND=['soldier','cannon','small_stone_wall','rain_spell','archer'];
+
+  // ── Step definitions ───────────────────────────────────────────────────────
+  var _steps=[
+    // 0 – Welcome
+    {title:'Welcome to Reconquesta!',
+     body:'This tutorial walks you through the UI and core rules one step at a time.<br><br>Click <b>Next \u2192</b> to advance, or <b>Exit Tutorial</b> to quit at any time.',
+     highlight:null,actionHint:''},
+    // 1 – Win condition
+    {title:'How to Win',
+     body:'Each player starts with <b>20 Glory</b>. Reduce your opponent\'s Glory to 0 to win.<br><br>Move a Conqueror into the enemy <b>Recruit Zone (RZ)</b>, then attack from there to deal direct Glory damage.',
+     highlight:null,actionHint:''},
+    // 2 – Battlefield
+    {title:'The Battlefield',
+     body:'The central grid is 8 rows \u00d7 5 columns.<br><br>'
+        +'\u2022 <b>RZ</b> \u2013 your home rows; where Conquerors spawn.<br>'
+        +'\u2022 <b>BURZ</b> \u2013 corner backup squares, unlocked under pressure.<br>'
+        +'\u2022 <b>AD</b> \u2013 Artillery &amp; Defence zone.<br>'
+        +'\u2022 <b>BF</b> \u2013 the middle battlefield where units clash.',
+     highlight:'.battlefield-wrap',actionHint:''},
+    // 3 – Hand
+    {title:'Your Hand',
+     body:'The <b>left panel</b> shows your hand \u2014 cards available to play. '
+        +'Affordable cards are fully lit; cards you cannot pay for are dimmed.<br><br>'
+        +'Your starting hand contains: <b>Soldier</b>, <b>Cannon</b>, <b>Small Stone Wall</b>, <b>Rain Spell</b>, and <b>Archer</b>.',
+     highlight:'.left-panel',actionHint:''},
+    // 4 – Resources
+    {title:'Resources',
+     body:'Below your hand are your five resource types:<br>'
+        +'Water \ud83d\udca7, Earth \ud83c\udf3f, Fire \ud83d\udd25, Light \u2600\ufe0f, Dark \ud83c\udf11.<br><br>'
+        +'You start with <b>1 of each</b>. Spend resources to recruit units and play Action cards. Gain more each turn during the <b>Pillage</b> phase.',
+     highlight:'.left-panel',actionHint:''},
+    // 5 – Phases
+    {title:'Turn Phases',
+     body:'Each turn follows this order:<br><br>'
+        +'<b>Draw</b> \u2192 draw a card from your deck.<br>'
+        +'<b>Pillage</b> \u2192 gain resources (3 different types, or 2 of the same).<br>'
+        +'<b>Strategize</b> \u2192 place units, play spells, move troops.<br>'
+        +'<b>Combat</b> \u2192 attack with your units.<br>'
+        +'<b>Recover</b> \u2192 extra moves &amp; plays after combat.<br>'
+        +'<b>End Turn</b> \u2192 pass to your opponent.',
+     highlight:'.phase-bar',actionHint:''},
+    // 6 – Action buttons
+    {title:'Action Buttons',
+     body:'The right panel lists your action buttons:<br><br>'
+        +'\u2022 <b>Draw Card</b> \u2013 draw for this turn.<br>'
+        +'\u2022 <b>Pillage Resources</b> \u2013 open the resource picker.<br>'
+        +'\u2022 <b>Strategize Phase</b> \u2013 advance to Strategize.<br>'
+        +'\u2022 <b>Combat Phase</b> \u2013 enter Combat.<br>'
+        +'\u2022 <b>Recover Phase</b> \u2013 enter Recovery.<br>'
+        +'\u2022 <b>End Turn</b> \u2013 finish your turn.<br>'
+        +'\u2022 <b>Recruit / Play Card</b> \u2013 place a selected hand card.<br>'
+        +'\u2022 <b>Move Selected</b> \u2013 move a selected field unit.<br>'
+        +'\u2022 <b>Cancel / Undo</b> \u2013 cancel or revert the last action.',
+     highlight:'nav[aria-label="Turn actions"]',actionHint:''},
+    // 7 – Auto-flow
+    {title:'Auto-Flow Settings',
+     body:'The <b>Auto-Flow</b> panel has toggles that automate common steps:<br><br>'
+        +'\u2022 Auto-draw at turn start.<br>'
+        +'\u2022 Auto-advance Pillage \u2192 Strategize.<br>'
+        +'\u2022 Auto-play from hand on click.<br>'
+        +'\u2022 Auto-combat / Auto-move on unit click.<br><br>'
+        +'These are all <b>off</b> during the tutorial so you can practice each step manually.',
+     highlight:'.af-panel',actionHint:''},
+    // 8 – Battle log
+    {title:'Battle Log',
+     body:'The <b>Battle Log</b> at the bottom right records every action \u2014 attacks, damage, placements, resource changes. Scroll up to review recent history.',
+     highlight:'.log-area',actionHint:''},
+    // 9 – Card types
+    {title:'Card Types',
+     body:'\u2022 <b>Conquerors</b> \u2013 main fighters; they move and attack.<br>'
+        +'\u2022 <b>Artillery</b> \u2013 ranged units placed in AD zones; can attack on the turn played.<br>'
+        +'\u2022 <b>Obstacles</b> \u2013 terrain and walls placed in AD zones.<br>'
+        +'\u2022 <b>Traps</b> \u2013 face-down cards that trigger when an enemy steps on them.<br>'
+        +'\u2022 <b>Actions</b> \u2013 instant spell cards with a variety of effects.',
+     highlight:'.hand-area',actionHint:''},
+    // 10 – Attributes
+    {title:'Attributes &amp; Weaknesses',
+     body:'Units have attributes: Water, Earth, Fire, Light, or Dark (some are Universal).<br><br>'
+        +'Each unit may be <b>weak</b> to certain attribute types \u2014 attacks from those types deal bonus damage. Click any card to view its weaknesses in the detail panel on the right.',
+     highlight:'#card-detail',actionHint:''},
+    // ── TURN 1 interactive steps ───────────────────────────────────────────
+    // 11 – Draw (T1)
+    {title:'Turn 1 \u2013 Draw a Card',
+     body:'Your first action every turn is to <b>draw a card</b>.<br><br>'
+        +'You will draw a <b>Soldier</b> \u2014 a reliable Conqueror that costs 2 Earth and has Move 2.',
+     highlight:'#btn-draw',actionHint:'\ud83d\udc49 Click <b>Draw Card</b> (or press D).',waitFor:'draw'},
+    // 12 – Pillage (T1)
+    {title:'Turn 1 \u2013 Pillage Resources',
+     body:'Now gain resources. Choose <b>2 Earth</b> (same type) or any 3 different types.<br><br>'
+        +'Tip: picking 2 Earth will let you afford the Soldier you just drew (cost: 2 Earth).',
+     highlight:'#btn-pillage',actionHint:'\ud83d\udc49 Click <b>Pillage Resources</b> and confirm.',waitFor:'pillage'},
+    // 13 – Strategize (T1)
+    {title:'Turn 1 \u2013 Strategize',
+     body:'Click <b>Strategize Phase</b> to enter the main action phase where you can place units and play cards.',
+     highlight:'#btn-strategize',actionHint:'\ud83d\udc49 Click <b>Strategize Phase</b>.',waitFor:'strategize'},
+    // 14 – Recruit Soldier (T1)
+    {title:'Turn 1 \u2013 Recruit Your Soldier',
+     body:'Select the <b>Soldier</b> card from your hand (left panel), then click <b>Recruit / Play Card</b>.<br><br>'
+        +'Green squares will highlight your valid RZ placement spots. Click one to place the Soldier.',
+     highlight:'.hand-area',actionHint:'\ud83d\udc49 Click the Soldier card, then click <b>Recruit / Play Card</b>.',waitFor:'recruit'},
+    // 15 – End Turn 1
+    {title:'Turn 1 \u2013 End Your Turn',
+     body:'Great work! Now click <b>End Turn</b> to pass to the next turn.<br><br>'
+        +'In a real game your opponent would now play \u2014 but in this tutorial you get Turn 2 right away.',
+     highlight:'#btn-end',actionHint:'\ud83d\udc49 Click <b>End Turn</b>.',waitFor:'endturn'},
+    // ── TURN 2 interactive steps ───────────────────────────────────────────
+    // 16 – Turn 2 intro
+    {title:'Turn 2 \u2013 Move &amp; Attack',
+     body:'Welcome to Turn 2! Your Soldier is now on the board. This turn you will:<br><br>'
+        +'1. Draw and Pillage as before.<br>'
+        +'2. <b>Move</b> your Soldier toward the enemy.<br>'
+        +'3. <b>Attack</b> the enemy Soldier in the middle of the board.',
+     highlight:null,actionHint:''},
+    // 17 – Draw (T2)
+    {title:'Turn 2 \u2013 Draw',
+     body:'Draw your card for this turn.',
+     highlight:'#btn-draw',actionHint:'\ud83d\udc49 Click <b>Draw Card</b>.',waitFor:'draw'},
+    // 18 – Pillage (T2)
+    {title:'Turn 2 \u2013 Pillage',
+     body:'Gain your resources for this turn.',
+     highlight:'#btn-pillage',actionHint:'\ud83d\udc49 Click <b>Pillage Resources</b> and confirm.',waitFor:'pillage'},
+    // 19 – Strategize (T2)
+    {title:'Turn 2 \u2013 Strategize',
+     body:'Enter the Strategize phase so you can move your Soldier.',
+     highlight:'#btn-strategize',actionHint:'\ud83d\udc49 Click <b>Strategize Phase</b>.',waitFor:'strategize'},
+    // 20 – Move (T2)
+    {title:'Turn 2 \u2013 Move Your Soldier',
+     body:'Click your <b>Soldier</b> on the battlefield to select it, then click <b>Move Selected</b>.<br><br>'
+        +'Blue squares show where it can move. Move it closer to the enemy Soldier in row 4.',
+     highlight:'.battlefield-wrap',actionHint:'\ud83d\udc49 Select your Soldier, click <b>Move Selected</b>, then pick a destination.',waitFor:'move'},
+    // 21 – Combat (T2)
+    {title:'Turn 2 \u2013 Enter Combat',
+     body:'Now click <b>Combat Phase</b> to enter combat.',
+     highlight:'#btn-combat',actionHint:'\ud83d\udc49 Click <b>Combat Phase</b>.',waitFor:'combat'},
+    // 22 – Attack (T2)
+    {title:'Turn 2 \u2013 Attack!',
+     body:'Click your <b>Soldier</b> on the battlefield. Red squares will highlight valid targets.<br><br>'
+        +'Click the enemy Soldier to attack it!',
+     highlight:'.battlefield-wrap',actionHint:'\ud83d\udc49 Click your Soldier, then click the enemy unit.',waitFor:'attack'},
+    // 23 – Stacking
+    {title:'Unit Stacking',
+     body:'Each square can hold up to one of each type: Trap + Obstacle + Artillery + Conqueror (friendly only).<br><br>'
+        +'When a square is attacked, damage hits in order: <b>Obstacle \u2192 Artillery \u2192 Conqueror</b>.',
+     highlight:'.battlefield-wrap',actionHint:''},
+    // 24 – Final Charge
+    {title:'The Final Charge',
+     body:'When a player\'s deck and discard pile are both empty they enter <b>The Final Charge</b>. No more cards can be drawn.<br><br>'
+        +'If they end a turn with no units on the board, their Glory drops to 0 and they lose immediately.',
+     highlight:null,actionHint:''},
+    // 25 – Done
+    {title:'Tutorial Complete! \ud83c\udf89',
+     body:'You now know the basics of Reconquesta! Head back to the title screen and start a real game \u2014 good luck, Majesty.<br><br>'
+        +'Remember: push Conquerors into the enemy RZ and strike their Glory to 0 to win.',
+     highlight:null,actionHint:''}
+  ];
+
+  // ── UI helpers ─────────────────────────────────────────────────────────────
+  function _clearHighlight(){
+    document.querySelectorAll('.tut-highlighted').forEach(function(el){
+      el.classList.remove('tut-highlighted');
+      el.style.removeProperty('box-shadow');
+      el.style.removeProperty('z-index');
+    });
+  }
+
+  function _highlightEl(sel){
+    _clearHighlight();
+    if(!sel)return;
+    var el=document.querySelector(sel);
+    if(!el)return;
+    el.classList.add('tut-highlighted');
+    el.style.zIndex='199';
+    el.style.boxShadow='0 0 0 3px #d4a843,0 0 0 6px #d4a84340';
+    _positionBox(el);
+  }
+
+  function _positionBox(el){
+    var box=document.getElementById('tut-box');
+    var rect=el.getBoundingClientRect();
+    var vw=window.innerWidth,vh=window.innerHeight,bw=355,bh=330;
+    var left,top;
+    if(rect.right+bw+16<vw){left=rect.right+12;top=Math.max(8,rect.top);}
+    else if(rect.left-bw-16>0){left=rect.left-bw-12;top=Math.max(8,rect.top);}
+    else if(rect.bottom+bh+16<vh){left=Math.max(8,rect.left);top=rect.bottom+12;}
+    else{left=(vw-bw)/2;top=(vh-bh)/2;}
+    left=Math.max(8,Math.min(left,vw-bw-8));
+    top=Math.max(8,Math.min(top,vh-bh-8));
+    box.style.left=left+'px';box.style.top=top+'px';
+  }
+
+  function _centerBox(){
+    var box=document.getElementById('tut-box');
+    var vw=window.innerWidth,vh=window.innerHeight;
+    box.style.left=Math.max(8,(vw-355)/2)+'px';
+    box.style.top=Math.max(8,(vh-330)/2)+'px';
+  }
+
+  function _unlockNext(hint){
+    _waitingForAction=false;_actionType=null;
+    var nb=document.getElementById('tut-next');
+    nb.disabled=false;nb.style.opacity='1';nb.style.cursor='pointer';
+    document.getElementById('tut-action-hint').textContent=hint||'\u2713 Done! Click Next \u2192 to continue.';
+  }
+
+  function _render(){
+    var s=_steps[_step];
+    document.getElementById('tut-step-label').textContent='Step '+(_step+1)+' of '+_steps.length;
+    document.getElementById('tut-title').innerHTML=s.title;
+    document.getElementById('tut-body').innerHTML=s.body;
+    document.getElementById('tut-action-hint').innerHTML=s.actionHint||'';
+    var nb=document.getElementById('tut-next');
+    nb.textContent=(_step===_steps.length-1)?'Finish \u2713':'Next \u2192';
+    _waitingForAction=!!(s.waitFor);
+    _actionType=s.waitFor||null;
+    nb.disabled=_waitingForAction;
+    nb.style.opacity=_waitingForAction?'0.35':'1';
+    nb.style.cursor=_waitingForAction?'default':'pointer';
+    if(s.highlight){_highlightEl(s.highlight);}else{_clearHighlight();_centerBox();}
+  }
+
+  // ── Patches ────────────────────────────────────────────────────────────────
+  function _applyPatches(){
+    if(_patchesApplied)return;
+    _patchesApplied=true;
+
+    // Draw – on Turn 1 inject a fixed Soldier; on Turn 2 draw normally
+    _origDraw=window.doDrawPhase;
+    window.doDrawPhase=function(){
+      if(_active&&_tutTurn===1){
+        // Inject a Soldier as the drawn card instead of a random deck draw
+        var p=G.players[0];
+        var soldierInst=newInst('soldier');
+        soldierInst.justRecruited=false;
+        p.hand.push(soldierInst);
+        p.drawnThisTurn=true;
+        G.phase='pillage';
+        addLog('You (tutorial) draw a Soldier.','p1');
+        refreshUI();
+      } else {
+        _origDraw.apply(this,arguments);
+      }
+      if(_active&&_actionType==='draw')_unlockNext();
+    };
+
+    _origPillage=window.confirmPillage;
+    window.confirmPillage=function(){
+      _origPillage.apply(this,arguments);
+      if(_active&&_actionType==='pillage')_unlockNext();
+    };
+
+    _origStrategize=window.enterStrategize;
+    window.enterStrategize=function(){
+      _origStrategize.apply(this,arguments);
+      if(_active&&_actionType==='strategize')_unlockNext();
+    };
+
+    _origRecruit=window.placeCard;
+    window.placeCard=function(){
+      _origRecruit.apply(this,arguments);
+      if(_active&&_actionType==='recruit')_unlockNext();
+    };
+
+    _origCombat=window.enterCombat;
+    window.enterCombat=function(){
+      _origCombat.apply(this,arguments);
+      if(_active&&_actionType==='combat')_unlockNext();
+    };
+
+    // Move – detect when a unit finishes moving
+    var _origMoveUnit=window.moveUnit;
+    window.moveUnit=function(){
+      _origMoveUnit.apply(this,arguments);
+      if(_active&&_actionType==='move')_unlockNext();
+    };
+
+    // Attack – detect when an attack resolves
+    var _origDoAttack=window.doAttack;
+    window.doAttack=function(){
+      _origDoAttack.apply(this,arguments);
+      if(_active&&_actionType==='attack')_unlockNext('\u2713 Attack landed! Click Next \u2192 to continue.');
+    };
+
+    // End turn – detect and advance tutorial turn counter
+    _origEndTurn=window.endTurn;
+    window.endTurn=function(){
+      if(_active&&_tutTurn===1){
+        // After turn 1 ends, skip opponent turn and set up Turn 2 directly
+        var ap=G.activePlayer,p=G.players[ap];
+        addLog(p.name+' ends Turn 1 (tutorial).','p1');
+        // Reset turn flags on player units
+        for(var r=0;r<8;r++)for(var c=0;c<5;c++){
+          ['conqueror','artillery'].forEach(function(lk){
+            var u=G.cells[r][c][lk];
+            if(u&&u.owner===0){u.movedThisTurn=false;u.attackedThisTurn=false;u.exhausted=false;u.justRecruited=false;}
+          });
+        }
+        G.armorActive=false;G.energyDrainActive=false;
+        p.pillagedThisTurn=false;p.drawnThisTurn=false;
+        clearUndo();
+        // Stay on player 0 for Turn 2
+        G.activePlayer=0;G.charge++;G.phase='draw';
+        G.selectedCard=null;G.actionMode=null;G.highlightCells=[];
+        _tutTurn=2;
+        refreshUI();
+        if(_active&&_actionType==='endturn')_unlockNext();
+      } else {
+        _origEndTurn.apply(this,arguments);
+        if(_active&&_actionType==='endturn')_unlockNext();
+      }
+    };
+  }
+
+  function _removePatches(){
+    if(!_patchesApplied)return;
+    window.doDrawPhase=_origDraw;
+    window.confirmPillage=_origPillage;
+    window.enterStrategize=_origStrategize;
+    window.placeCard=_origRecruit;
+    window.enterCombat=_origCombat;
+    // moveUnit and doAttack were patched inline; restore via originals stored above
+    // (they are captured in closure — re-patch guard prevents double-wrap)
+    _patchesApplied=false;
+  }
+
+  // ── Tutorial game initialisation ───────────────────────────────────────────
+  function _initTutorialGame(){
+    // Use normal initGame so all state is clean, then override tutorial-specific parts
+    initGame('You','Opponent','pvp',DECKS.balanced.slice(),DECKS.balanced.slice(),'before');
+    G.activePlayer=0;G.phase='draw';
+    G.mode='tutorial'; // sentinel so endTurn patch can identify tutorial mode
+
+    // Fixed starting resources: exactly 1 of each type for player 0
+    G.players[0].resources={W:1,E:1,F:1,L:1,D:1};
+    // Adjust cellar accordingly (initGame starts cellar at 15 each)
+    RES.forEach(function(t){G.cellar[t]=15-1;});
+
+    // Fixed starting hand: clear whatever initGame dealt, add 5 fixed cards
+    G.players[0].hand=[];
+    TUT_HAND.forEach(function(cid){
+      var inst=newInst(cid);
+      inst.justRecruited=false;
+      G.players[0].hand.push(inst);
+    });
+
+    // Enemy Soldier placed at row 4, col 2 (reachable in 2 moves from RZ)
+    var opp=newInst('soldier');
+    opp.owner=1;opp.justRecruited=false;opp.currentHp=6;
+    G.cells[5][2].conqueror=opp;
+
+    // Disable auto-flow for tutorial so player practises each step manually
+    Object.keys(autoSettings).forEach(function(k){autoSettings[k]=false;});
+    renderAutoFlowPanel();
+
+    _tutTurn=1;
+    showScreen('game-screen');
+    refreshUI();
+  }
+
+  // ── Public API ─────────────────────────────────────────────────────────────
+  function start(){
+    _step=0;_active=true;_tutTurn=1;
+    _applyPatches();
+    _initTutorialGame();
+    document.getElementById('tutorial-overlay').style.display='block';
+    var box=document.getElementById('tut-box');
+    box.style.display='block';box.style.pointerEvents='all';
+    document.getElementById('tut-next').onclick=function(){next();};
+    document.getElementById('tut-exit').onclick=function(){exit();};
+    _render();
+  }
+
+  function next(){
+    if(_waitingForAction)return;
+    if(_step>=_steps.length-1){exit();return;}
+    _step++;_render();
+  }
+
+  function exit(){
+    _active=false;_waitingForAction=false;_actionType=null;_tutTurn=1;
+    _removePatches();_clearHighlight();
+    // Restore auto-flow to defaults
+    autoSettings.autoDrawOnTurnStart=true;
+    autoSettings.autoAdvancePillageToStrategize=true;
+    autoSettings.autoPlayFromHand=true;
+    autoSettings.autoCombatSelect=true;
+    autoSettings.autoMoveSelect=true;
+    renderAutoFlowPanel();
+    document.getElementById('tutorial-overlay').style.display='none';
+    document.getElementById('tut-box').style.display='none';
+    showScreen('title-screen');
+  }
+
+  return {start:start,next:next,exit:exit};
+})();
+</script>
+</body>
+</html>
 </script>
 </body>
 </html>
